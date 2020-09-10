@@ -45,14 +45,14 @@ func (s *Service) GetAll(ctx context.Context, pagination *foodproto.Pagination) 
 	return foods, nil
 }
 
-func (s *Service) GetTotal() (int, error) {
+func (s *Service) GetTotal(ctx context.Context, e *empty.Empty) (*foodproto.Total, error) {
 	var total int
 	row := s.db.QueryRow(queries.GET_TOTAL_FOOD)
 	err := row.Scan(&total)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	return total, nil
+	return &foodproto.Total{TotalData: strconv.Itoa(total)}, nil
 }
 
 func (s *Service) GetByID(ctx context.Context, id *foodproto.ID) (*foodproto.Food, error) {
