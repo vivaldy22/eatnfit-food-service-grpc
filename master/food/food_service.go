@@ -3,6 +3,8 @@ package food
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"strconv"
 
 	"github.com/google/uuid"
 
@@ -15,9 +17,13 @@ type Service struct {
 	db *sql.DB
 }
 
-func (s Service) GetAll(ctx context.Context, empty *empty.Empty) (*foodproto.FoodList, error) {
+func (s *Service) GetAll(ctx context.Context, pagination *foodproto.Pagination) (*foodproto.FoodList, error) {
 	var foods = new(foodproto.FoodList)
-	rows, err := s.db.Query(queries.GET_ALL_FOOD)
+	page, _ := strconv.Atoi(pagination.Page)
+	limit, _ := strconv.Atoi(pagination.Limit)
+	offset := (page * limit) - limit
+	query := fmt.Sprintf(queries.GET_ALL_FOOD, offset, pagination.Limit)
+	rows, err := s.db.Query(query, "%"+pagination.Keyword+"%")
 
 	if err != nil {
 		return nil, err
@@ -39,7 +45,17 @@ func (s Service) GetAll(ctx context.Context, empty *empty.Empty) (*foodproto.Foo
 	return foods, nil
 }
 
-func (s Service) GetByID(ctx context.Context, id *foodproto.ID) (*foodproto.Food, error) {
+func (s *Service) GetTotal() (int, error) {
+	var total int
+	row := s.db.QueryRow(queries.GET_TOTAL_FOOD)
+	err := row.Scan(&total)
+	if err != nil {
+		return 0, err
+	}
+	return total, nil
+}
+
+func (s *Service) GetByID(ctx context.Context, id *foodproto.ID) (*foodproto.Food, error) {
 	var food = new(foodproto.Food)
 	row := s.db.QueryRow(queries.GET_BY_ID_FOOD, id.Id)
 
@@ -51,7 +67,7 @@ func (s Service) GetByID(ctx context.Context, id *foodproto.ID) (*foodproto.Food
 	return food, nil
 }
 
-func (s Service) Create(ctx context.Context, food *foodproto.Food) (*foodproto.Food, error) {
+func (s *Service) Create(ctx context.Context, food *foodproto.Food) (*foodproto.Food, error) {
 	tx, err := s.db.Begin()
 
 	if err != nil {
@@ -76,7 +92,7 @@ func (s Service) Create(ctx context.Context, food *foodproto.Food) (*foodproto.F
 	return food, tx.Commit()
 }
 
-func (s Service) Update(ctx context.Context, request *foodproto.FoodUpdateRequest) (*foodproto.Food, error) {
+func (s *Service) Update(ctx context.Context, request *foodproto.FoodUpdateRequest) (*foodproto.Food, error) {
 	tx, err := s.db.Begin()
 	if err != nil {
 		return nil, err
@@ -98,7 +114,7 @@ func (s Service) Update(ctx context.Context, request *foodproto.FoodUpdateReques
 	return request.Food, tx.Commit()
 }
 
-func (s Service) Delete(ctx context.Context, id *foodproto.ID) (*empty.Empty, error) {
+func (s *Service) Delete(ctx context.Context, id *foodproto.ID) (*empty.Empty, error) {
 	tx, err := s.db.Begin()
 	if err != nil {
 		return new(empty.Empty), err
