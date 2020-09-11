@@ -35,9 +35,8 @@ CREATE TABLE tb_transaction (
     user_id VARCHAR(36) NOT NULL,
     packet_id VARCHAR(36) NOT NULL,
     portion INT NOT NULL,
-    start_date DATE NOT NULL,
-    end_date DATE NOT NULL,
-    start_time TIMESTAMP NOT NULL,
+    sent_date DATE NOT NULL,
+    sent_time TIMESTAMP NOT NULL,
     address TEXT NOT NULL,
     payment_id VARCHAR(36) NOT NULL
 );

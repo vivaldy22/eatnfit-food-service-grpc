@@ -104,7 +104,7 @@ func (s *Service) Update(ctx context.Context, request *foodproto.FoodUpdateReque
 	}
 
 	_, err = stmt.Exec(request.Food.FoodPortion, request.Food.FoodName, request.Food.FoodCalories, request.Food.FoodFat,
-		request.Food.FoodCarbs, request.Food.FoodProtein, request.Food.FoodPrice, request.Id.Id)
+		request.Food.FoodCarbs, request.Food.FoodProtein, request.Food.FoodPrice, request.Food.FoodDesc, request.Id.Id)
 	if err != nil {
 		return nil, tx.Rollback()
 	}

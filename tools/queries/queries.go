@@ -18,11 +18,23 @@ const (
 						food_carbs = ?,
 						food_protein = ?,
 						food_price = ?,
-						food_desc = ?,
+						food_desc = ?
 					WHERE food_id = ? AND food_status = 1`
 	DELETE_FOOD = `UPDATE tb_food
 					SET food_status = 0
 					WHERE food_id = ?`
 
-	GET_ALL_DETAIL_PACKET = ``
+	GET_ALL_PACKET = `SELECT * 
+						FROM tb_packet
+						WHERE packet_status = 1 AND
+						packet_name LIKE ?
+						ORDER BY 2
+						LIMIT %v, %v`
+	GET_TOTAL_PACKET       = `SELECT COUNT(*) FROM tb_packet WHERE packet_status = 1`
+	GET_PACKET_BY_ID       = `SELECT * FROM tb_packet WHERE packet_id = ? AND packet_status = 1`
+	GET_FOODS_BY_PACKET_ID = `SELECT f.*
+								FROM tb_packet_and_food pf
+								JOIN tb_food f ON pf.food_id = f.food_id
+								JOIN tb_packet p ON pf.packet_id = p.packet_id
+								WHERE p.packet_id = ?`
 )
