@@ -37,4 +37,21 @@ const (
 								JOIN tb_food f ON pf.food_id = f.food_id
 								JOIN tb_packet p ON pf.packet_id = p.packet_id
 								WHERE p.packet_id = ?`
+	CREATE_PACKET        = `INSERT INTO tb_packet VALUES (?, ?, ?, ?, 1)`
+	CREATE_DETAIL_PACKET = `INSERT INTO tb_packet_and_food VALUES (?, ?, ?, 1)`
+
+	DELETE_PACKET = `UPDATE tb_packet
+					SET packet_status = 0
+					WHERE packet_id = ?`
+	DELETE_DETAIL_PACKET = `UPDATE tb_packet_and_food
+							SET pm_status = 0
+							WHERE packet_id = ?`
+	UPDATE_PACKET = `UPDATE tb_packet
+					SET packet_name = ?,
+						packet_price = ?,
+						packet_desc = ?
+					WHERE packet_id = ?`
+	UPDATE_DETAIL_PACKET = `UPDATE tb_packet_and_food
+					SET food_id = ?
+					WHERE packet_id = ?`
 )

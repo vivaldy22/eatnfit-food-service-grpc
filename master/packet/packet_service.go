@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/google/uuid"
+
 	"github.com/golang/protobuf/ptypes/empty"
 	foodproto "github.com/vivaldy22/eatnfit-food-service/proto"
 	"github.com/vivaldy22/eatnfit-food-service/tools/queries"
@@ -87,16 +89,113 @@ func (s *Service) GetByID(ctx context.Context, id *foodproto.ID) (*foodproto.Det
 	}, nil
 }
 
-func (s *Service) Create(ctx context.Context, packet *foodproto.DetailPacket) (*foodproto.DetailPacket, error) {
-	panic("implement me")
+func (s *Service) Create(ctx context.Context, packet *foodproto.DetailPacketInsert) (*foodproto.DetailPacketInsert, error) {
+	tx, err := s.db.Begin()
+
+	if err != nil {
+		return nil, err
+	}
+
+	stmt, err := tx.Prepare(queries.CREATE_PACKET)
+
+	if err != nil {
+		return nil, err
+	}
+
+	idPacket := uuid.New().String()
+	_, err = stmt.Exec(idPacket, packet.Packet.PacketName, packet.Packet.PacketPrice, packet.Packet.PacketDesc)
+	if err != nil {
+		return nil, tx.Rollback()
+	}
+
+	packet.Packet.PacketId = idPacket
+
+	for _, food := range packet.ListFood {
+		stmt, err = tx.Prepare(queries.CREATE_DETAIL_PACKET)
+		if err != nil {
+			return nil, tx.Rollback()
+		}
+
+		idDetail := uuid.New().String()
+		_, err = stmt.Exec(idDetail, idPacket, food.FoodId)
+		if err != nil {
+			return nil, tx.Rollback()
+		}
+	}
+	stmt.Close()
+
+	return &foodproto.DetailPacketInsert{
+		Packet:   packet.Packet,
+		ListFood: packet.ListFood,
+	}, tx.Commit()
 }
 
-func (s *Service) Update(ctx context.Context, request *foodproto.DetailPacketUpdateRequest) (*foodproto.DetailPacket, error) {
-	panic("implement me")
+func (s *Service) Update(ctx context.Context, request *foodproto.DetailPacketUpdateRequest) (*foodproto.DetailPacketInsert, error) {
+	tx, err := s.db.Begin()
+
+	if err != nil {
+		return nil, err
+	}
+
+	stmt, err := tx.Prepare(queries.UPDATE_PACKET)
+
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = stmt.Exec(request.Packet.Packet.PacketName, request.Packet.Packet.PacketPrice,
+		request.Packet.Packet.PacketDesc, request.Id.Id)
+	if err != nil {
+		return nil, tx.Rollback()
+	}
+
+	for _, food := range request.Packet.ListFood {
+		stmt, err = tx.Prepare(queries.UPDATE_DETAIL_PACKET)
+		if err != nil {
+			return nil, tx.Rollback()
+		}
+
+		_, err = stmt.Exec(food.FoodId, request.Id.Id)
+		if err != nil {
+			return nil, tx.Rollback()
+		}
+	}
+	stmt.Close()
+
+	return &foodproto.DetailPacketInsert{
+		Packet:   request.Packet.Packet,
+		ListFood: request.Packet.ListFood,
+	}, tx.Commit()
 }
 
 func (s *Service) Delete(ctx context.Context, id *foodproto.ID) (*empty.Empty, error) {
-	panic("implement me")
+	tx, err := s.db.Begin()
+	if err != nil {
+		return new(empty.Empty), err
+	}
+
+	stmt, err := tx.Prepare(queries.DELETE_PACKET)
+	if err != nil {
+		return new(empty.Empty), err
+	}
+
+	_, err = stmt.Exec(id.Id)
+	if err != nil {
+		return new(empty.Empty), tx.Rollback()
+	}
+
+	stmt, err = tx.Prepare(queries.DELETE_DETAIL_PACKET)
+	if err != nil {
+		return new(empty.Empty), err
+	}
+
+	_, err = stmt.Exec(id.Id)
+	if err != nil {
+		return new(empty.Empty), tx.Rollback()
+	}
+
+	stmt.Close()
+	return new(empty.Empty), tx.Commit()
 }
 
 func NewService(db *sql.DB) foodproto.PacketCRUDServer {
