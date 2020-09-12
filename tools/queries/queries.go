@@ -54,4 +54,17 @@ const (
 	UPDATE_DETAIL_PACKET = `UPDATE tb_packet_and_food
 					SET food_id = ?
 					WHERE packet_id = ?`
+
+	GET_ALL_TRANSACTION = `SELECT * 
+						FROM tb_transaction
+						WHERE trans_status = 1
+						ORDER BY 2
+						LIMIT %v, %v`
+	GET_TOTAL_TRANSACTION       = `SELECT COUNT(*) FROM tb_transaction WHERE trans_status = 1`
+	GET_TRANS_BY_ID_TRANSACTION = `SELECT * FROM tb_transaction WHERE trans_id = ? AND trans_status = 1`
+	GET_TRANS_BY_ID_USER        = `SELECT * FROM tb_transaction WHERE user_id = ? AND trans_status = 1`
+	CREATE_TRANS                = `INSERT INTO tb_transaction VALUES (?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?, 1)`
+	DELETE_TRANS                = `UPDATE tb_transaction
+									SET trans_status = 0
+									WHERE trans_id = ?`
 )

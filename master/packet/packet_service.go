@@ -117,7 +117,7 @@ func (s *Service) Create(ctx context.Context, packet *foodproto.DetailPacketInse
 		}
 
 		idDetail := uuid.New().String()
-		_, err = stmt.Exec(idDetail, idPacket, food.FoodId)
+		_, err = stmt.Exec(idDetail, idPacket, food)
 		if err != nil {
 			return nil, tx.Rollback()
 		}
@@ -155,7 +155,7 @@ func (s *Service) Update(ctx context.Context, request *foodproto.DetailPacketUpd
 			return nil, tx.Rollback()
 		}
 
-		_, err = stmt.Exec(food.FoodId, request.Id.Id)
+		_, err = stmt.Exec(food, request.Id.Id)
 		if err != nil {
 			return nil, tx.Rollback()
 		}

@@ -35,17 +35,13 @@ CREATE TABLE tb_transaction (
     user_id VARCHAR(36) NOT NULL,
     packet_id VARCHAR(36) NOT NULL,
     portion INT NOT NULL,
+    total_price INT NOT NULL,
     start_date DATE NOT NULL,
-    end_date DATE NOT NULL,
-    start_time TIMESTAMP NOT NULL,
+    start_time TIME NOT NULL,
     address TEXT NOT NULL,
     payment_id VARCHAR(36) NOT NULL,
-    transaction_status INT NOT NULL DEFAULT 1
-);
-
-CREATE TABLE tb_transaction_status (
-    status_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    status_name VARCHAR(100) NOT NULL
+    order_status INT NOT NULL DEFAULT 0,
+    trans_status INT NOT NULL DEFAULT 1
 );
 
 CREATE TABLE tb_payment (
