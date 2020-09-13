@@ -6,6 +6,8 @@ import (
 	"log"
 	"net"
 
+	"github.com/vivaldy22/eatnfit-food-service/master/transaction"
+
 	"github.com/vivaldy22/eatnfit-food-service/master/packet"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -52,6 +54,8 @@ func RunServer(db *sql.DB) {
 	food_service.RegisterFoodCRUDServer(srv, foodService)
 	packetService := packet.NewService(db)
 	food_service.RegisterPacketCRUDServer(srv, packetService)
+	transService := transaction.NewService(db)
+	food_service.RegisterTransactionCRUDServer(srv, transService)
 
 	reflection.Register(srv)
 

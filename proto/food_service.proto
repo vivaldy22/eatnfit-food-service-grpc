@@ -47,7 +47,18 @@ message Transaction {
   string start_time = 8;
   string address = 9;
   string payment_id = 10;
-  string trans_status = 11;
+  string order_status = 11;
+  string trans_status = 12;
+}
+
+message TransactionInput {
+  string user_id = 1;
+  string packet_id = 2;
+  string portion = 3;
+  string start_date = 4;
+  string start_time = 5;
+  string address = 6;
+  string payment_id = 7;
 }
 
 message TransactionList {
@@ -131,6 +142,5 @@ service TransactionCRUD {
   rpc GetByTransID(ID) returns (Transaction);
   rpc GetByUserID(ID) returns (Transaction);
   rpc Create(Transaction) returns (Transaction);
-  rpc Update(TransactionUpdateRequest) returns (Transaction);
   rpc Delete(ID) returns (google.protobuf.Empty);
 }

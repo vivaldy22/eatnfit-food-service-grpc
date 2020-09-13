@@ -149,17 +149,31 @@ func (s *Service) Update(ctx context.Context, request *foodproto.DetailPacketUpd
 		return nil, tx.Rollback()
 	}
 
-	for _, food := range request.Packet.ListFood {
-		stmt, err = tx.Prepare(queries.UPDATE_DETAIL_PACKET)
+	stmt, err = tx.Prepare(queries.DELETE_DETAIL_PACKET)
+	if err != nil {
+		return nil, tx.Rollback()
+	}
+
+	_, err = stmt.Exec(request.Id.Id)
+	if err != nil {
+		return nil, tx.Rollback()
+	}
+
+	for _, idFood := range request.Packet.ListFood {
+		stmt, err = tx.Prepare(queries.CREATE_DETAIL_PACKET)
+
 		if err != nil {
 			return nil, tx.Rollback()
 		}
 
-		_, err = stmt.Exec(food, request.Id.Id)
+		idDetail := uuid.New().String()
+
+		_, err := stmt.Exec(idDetail, idFood, request.Id.Id)
 		if err != nil {
 			return nil, tx.Rollback()
 		}
 	}
+
 	stmt.Close()
 
 	return &foodproto.DetailPacketInsert{

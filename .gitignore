@@ -1,2 +1,4 @@
 .idea/
 *.iml
+.vscode/
+conn_enf_food.session.sql
