@@ -46,7 +46,8 @@ const (
 	DELETE_DETAIL_PACKET = `UPDATE tb_packet_and_food
 							SET pm_status = 0
 							WHERE packet_id = ?`
-	UPDATE_PACKET = `UPDATE tb_packet
+	DELETE_PERMANENT_DETAIL_PACKET = `DELETE FROM tb_packet_and_food WHERE packet_id = ?`
+	UPDATE_PACKET                  = `UPDATE tb_packet
 					SET packet_name = ?,
 						packet_price = ?,
 						packet_desc = ?
