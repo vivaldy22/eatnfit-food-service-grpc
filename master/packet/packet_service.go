@@ -33,7 +33,7 @@ func (s *Service) GetAll(ctx context.Context, pagination *foodproto.Pagination) 
 
 	for rows.Next() {
 		var each = new(foodproto.Packet)
-		if err := rows.Scan(&each.PacketId, &each.PacketName, &each.PacketPrice, &each.PacketDesc, &each.PacketStatus); err != nil {
+		if err := rows.Scan(&each.PacketId, &each.PacketName, &each.PacketPortion, &each.PacketPrice, &each.PacketDesc, &each.PacketStatus); err != nil {
 			return nil, err
 		}
 		packets.List = append(packets.List, each)
@@ -60,7 +60,7 @@ func (s *Service) GetByID(ctx context.Context, id *foodproto.ID) (*foodproto.Det
 	var foods = new(foodproto.FoodList)
 	row := s.db.QueryRow(queries.GET_PACKET_BY_ID, id.Id)
 
-	err := row.Scan(&packet.PacketId, &packet.PacketName, &packet.PacketPrice, &packet.PacketDesc, &packet.PacketStatus)
+	err := row.Scan(&packet.PacketId, &packet.PacketName, &packet.PacketPortion, &packet.PacketPrice, &packet.PacketDesc, &packet.PacketStatus)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +104,7 @@ func (s *Service) Create(ctx context.Context, packet *foodproto.DetailPacketInse
 	}
 
 	idPacket := uuid.New().String()
-	_, err = stmt.Exec(idPacket, packet.Packet.PacketName, packet.Packet.PacketPrice, packet.Packet.PacketDesc)
+	_, err = stmt.Exec(idPacket, packet.Packet.PacketName, packet.Packet.PacketPortion, packet.Packet.PacketPrice, packet.Packet.PacketDesc)
 	if err != nil {
 		return nil, tx.Rollback()
 	}
@@ -150,7 +150,7 @@ func (s *Service) Update(ctx context.Context, request *foodproto.DetailPacketUpd
 		return nil, tx.Rollback()
 	}
 
-	_, err = stmt.Exec(request.Packet.Packet.PacketName, request.Packet.Packet.PacketPrice,
+	_, err = stmt.Exec(request.Packet.Packet.PacketName, request.Packet.Packet.PacketPortion, request.Packet.Packet.PacketPrice,
 		request.Packet.Packet.PacketDesc, request.Id.Id)
 	if err != nil {
 		return nil, tx.Rollback()
