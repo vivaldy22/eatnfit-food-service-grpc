@@ -19,6 +19,28 @@ type Service struct {
 	db *sql.DB
 }
 
+func (s *Service) ConfirmTransaction(ctx context.Context, id *foodproto.ID) (*foodproto.Transaction, error) {
+	tx, err := s.db.Begin()
+	if err != nil {
+		return nil, err
+	}
+
+	stmt, err := tx.Prepare(queries.CONFIRM_TRANSACTION)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = stmt.Exec(id.Id)
+	if err != nil {
+		return nil, tx.Rollback()
+	}
+
+	stmt.Close()
+	return &foodproto.Transaction{
+		TransId: id.Id,
+	}, tx.Commit()
+}
+
 func (s *Service) GetAll(ctx context.Context, pagination *foodproto.Pagination) (*foodproto.TransactionList, error) {
 	var transactions = new(foodproto.TransactionList)
 	page, _ := strconv.Atoi(pagination.Page)
@@ -69,16 +91,28 @@ func (s *Service) GetByTransID(ctx context.Context, id *foodproto.ID) (*foodprot
 	return trans, nil
 }
 
-func (s *Service) GetByUserID(ctx context.Context, id *foodproto.ID) (*foodproto.Transaction, error) {
-	var trans = new(foodproto.Transaction)
-	row := s.db.QueryRow(queries.GET_TRANS_BY_ID_USER, id.Id)
+func (s *Service) GetByUserID(ctx context.Context, id *foodproto.ID) (*foodproto.TransactionList, error) {
+	var transactions = new(foodproto.TransactionList)
+	rows, err := s.db.Query(queries.GET_TRANS_BY_ID_USER, id.Id)
 
-	err := row.Scan(&trans.TransId, &trans.TransDate, &trans.UserId, &trans.PacketId, &trans.Portion, &trans.TotalPrice,
-		&trans.StartDate, &trans.StartTime, &trans.Address, &trans.PaymentId, &trans.OrderStatus, &trans.TransStatus)
 	if err != nil {
 		return nil, err
 	}
-	return trans, nil
+	defer rows.Close()
+
+	for rows.Next() {
+		var each = new(foodproto.Transaction)
+		if err := rows.Scan(&each.TransId, &each.TransDate, &each.UserId, &each.PacketId, &each.Portion, &each.TotalPrice,
+			&each.StartDate, &each.StartTime, &each.Address, &each.PaymentId, &each.OrderStatus, &each.TransStatus); err != nil {
+			return nil, err
+		}
+		transactions.List = append(transactions.List, each)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return transactions, nil
 }
 
 func (s *Service) Create(ctx context.Context, trans *foodproto.Transaction) (*foodproto.Transaction, error) {
@@ -88,7 +122,7 @@ func (s *Service) Create(ctx context.Context, trans *foodproto.Transaction) (*fo
 		return nil, err
 	}
 
-	stmt, err := tx.Prepare(queries.CREATE_TRANS)
+	stmt, err := tx.Prepare(queries.CREATE_TRANS_PACKET)
 
 	if err != nil {
 		return nil, err

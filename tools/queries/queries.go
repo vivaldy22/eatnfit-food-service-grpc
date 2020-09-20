@@ -65,10 +65,16 @@ const (
 	GET_TOTAL_TRANSACTION       = `SELECT COUNT(*) FROM tb_transaction WHERE trans_status = 1`
 	GET_TRANS_BY_ID_TRANSACTION = `SELECT * FROM tb_transaction WHERE trans_id = ? AND trans_status = 1`
 	GET_TRANS_BY_ID_USER        = `SELECT * FROM tb_transaction WHERE user_id = ? AND trans_status = 1`
-	CREATE_TRANS                = `INSERT INTO tb_transaction
+	CREATE_TRANS_PACKET         = `INSERT INTO tb_transaction
 									VALUES (?, ?, ?, ?, ?, (SELECT packet_price FROM tb_packet WHERE packet_id = ?) * ? , 
+									?, ?, ?, ?, 0, 1)`
+	CREATE_TRANS_FOOD = `INSERT INTO tb_transaction
+									VALUES (?, ?, ?, ?, ?, (SELECT food_price FROM tb_food WHERE food_id = ?) * ? , 
 									?, ?, ?, ?, 0, 1)`
 	DELETE_TRANS = `UPDATE tb_transaction
 									SET trans_status = 0
 									WHERE trans_id = ?`
+	CONFIRM_TRANSACTION = `UPDATE tb_transaction
+						SET order_status = 1
+						WHERE trans_id = ?`
 )
